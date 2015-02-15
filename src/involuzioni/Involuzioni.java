@@ -1,7 +1,7 @@
 /*
  * Questo programma genera catene che come rinomine hanno solo involuzioni o rinomine in se stessi
  */
-package Involuzioni;
+package involuzioni;
 
 import java.util.ArrayList;
 import java.util.Random;
