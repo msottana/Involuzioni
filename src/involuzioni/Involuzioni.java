@@ -85,7 +85,7 @@ public class Involuzioni {
             s.add(b);
         }
         //alla fine, dopo aver creato tutti gli archi, sistemo le rate uscenti usando il nodo aggiuntivo
-        sistemaRate(ret, gen);
+        sistemaRate(ret);
         return ret;
     }
 
@@ -127,7 +127,6 @@ public class Involuzioni {
         Random gen = new Random();
         int aR = ro[b];
         int bR = ro[a];
-        int temp;
         //creo arco a-b
         chain[a][b] = gen.nextDouble();
         //creo arco dalla rinomina di b alla rinomina di a tramite la formula
@@ -150,7 +149,7 @@ public class Involuzioni {
         } while (n != nIniz && r != rIniz);
         return gruppo;
     }
-
+    //trova la massima rate uscente di un gruppo
     private static double findMax(ArrayList<Integer> gruppo, double[][] chain, int n) {
         double temp = 0;
         double valMax = -1.0;
@@ -165,8 +164,9 @@ public class Involuzioni {
         }
         return valMax;
     }
-
-    private static void sistemaRate(Tripla ret, Random gen) {
+    //per ogni nodo identifica il suo gruppo, il massimo di quel gruppo, e sistema la rate aggiungendo un arco verso il nodo
+    //aggiuntivo e crendo poi l'arco in ingresso verso la rinomina (che é in ingresso quindi non va a modificare la rate)
+    private static void sistemaRate(Tripla ret) {
         ArrayList<Integer> gruppo;
         ArrayList<Integer> nodi = new ArrayList<>();
         for (int i = 0; i < ret.chain.length; i++) {
@@ -175,12 +175,9 @@ public class Involuzioni {
         while (!nodi.isEmpty()) {
             int nodo = nodi.remove((int) 0);
             gruppo = findGroup(ret.ro, nodo, nodi);
-            System.out.println("dimensioni = " + gruppo.size());
             double valMax = findMax(gruppo, ret.chain, ret.chain.length);//valore
-            System.out.println(valMax);
             for (Integer x : gruppo) {
                 double sommaUscenti = trovaSommaUscenti(ret.chain, x);
-                System.out.println("sono uscenti");
                 double valArco = valMax - sommaUscenti;
                 System.out.println(sommaUscenti);
                 if (valArco != 0.0) {
@@ -191,6 +188,7 @@ public class Involuzioni {
         }
     }
 
+    //calcola la somma delle rate uscenti
     private static double trovaSommaUscenti(double[][] chain, Integer x) {
         double ret = 0;
         for (int j = 0; j < chain.length; j++) {
