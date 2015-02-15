@@ -91,13 +91,16 @@ public class Involuzioni {
 
     public static void main(String[] args) {
         // TODO code application logic here
-        int n = 6;
+        int n = 1000;
         long startTime = System.currentTimeMillis();
         long stopTime;
         long elapsedTime;
         Tripla tests[] = new Tripla[1];
         for (int k = 0; k < 1; k++) {
             Tripla chain = getChain(n);
+             stopTime = System.currentTimeMillis();
+            elapsedTime = stopTime - startTime;
+            System.out.println("Elapsed time: " + elapsedTime + "ms");
             double archi[][] = chain.chain;
             double nodi[] = chain.pi;
             tests[k] = chain;
