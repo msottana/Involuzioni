@@ -1,74 +1,85 @@
 /*
  * Questo programma genera catene che come rinomine hanno solo involuzioni o rinomine in se stessi
  */
-package involuzioni;
+package Involuzioni;
 
 import java.util.ArrayList;
 import java.util.Random;
 
 /**
  *
- * @author Matteo & Giulia
+ * @author Matteo and Giuly
  */
 public class Involuzioni {
 
-    /**
-     * @param args the command line arguments
+    /*
+     Questa funzione serve per creare la tripla ret contenente la matrice degli atchi, le pi e le ro.
      */
     public static Tripla getChain(int n) {
         Tripla ret = new Tripla();
+        //generiamo n nodi, e poi 1 in piú per sistemare le rate uscenti
         ret.chain = new double[n + 1][n + 1];
         ret.pi = new double[n + 1];
         ret.ro = new int[n + 1];
+        // s é l'insieme che contiene tutti i nodi che formano tra loro una componente connessa
         ArrayList<Integer> s = new ArrayList();
+        //u é l'insieme dei nodi che non si trovano nella componenete connessa
         ArrayList<Integer> u = new ArrayList();
         ArrayList<Integer> appoggio = new ArrayList();
         Random gen = new Random();
         int a, b;
+        
         for (int i = 0; i < n; i++) {
             appoggio.add(i);
         }
+        //qui creo le ro come involuzioni. O da 2 o da 1. Per tutti i nodi n del grafo ma non per l'n+1 che aggiungo per sistemare
+        //le rate perché quello deve essere per forza rinominato in se stesso
         while (!appoggio.isEmpty()){
-            System.out.print("dim appoggio =" + appoggio.size()+ "\n");
             int temp = appoggio.get(gen.nextInt(appoggio.size()));
             ret.ro[temp]=appoggio.get(gen.nextInt(appoggio.size()));
             ret.ro[ret.ro[temp]] = temp;
             appoggio.remove((Integer) ret.ro[temp]);
             appoggio.remove((Integer) temp);
         }
+        //rinomino il nodo aggiunto inse stesso
         ret.ro[n]=n;
-        //generazione pi greco per tutti i nodi
+        //generazione pi greco per tutti i nodi e li inserisco in u (tranne n+1)
         for (int i = 0; i < n; i++) {
             if (ret.pi[i] == 0) {
                 ret.pi[i] = gen.nextDouble();
             }
             ret.pi[ret.ro[i]] = ret.pi[i];
-            // inserimento nell'insieme u di partenza
             u.add(i);
         }
         //genero anche la pi del nodo fittizio
         ret.pi[n] = gen.nextDouble();
         //aggiungo un nodo all'insieme iniziale
-        s.add(u.remove(0));
-        //generazione degli archi
+        s.add(u.remove(gen.nextInt(u.size())));
+        //generazione degli archi: finché ci sono nodi in u prendo un nodo da s, ne rimuovo uno da u e faccio i controlli per vedere se
+        //fa giá parte o no della cc
         while (!u.isEmpty()) {
             a = s.get(gen.nextInt(s.size()));
             b = u.remove(gen.nextInt(u.size()));
+            //se non c'é l'arco da a fino a b lo creo. Non devo controllare che non ci sia giá un altro arco da un nodo di s che va verso
+            //u perché nel momento in cui lo metto, per definizione del mio programma, connetto tutto il nodo nella componente connessa
             if (ret.chain[a][b] == 0) {
                 rinomine(a, b, ret.pi, ret.chain, ret.ro);
             }
+            //poi invece devo controllare se c'é giá un arco dal nodo di u ad uno qualsiasi di quelli di s, perché potrebbe essere che 
+            //la generazione degli archi con le rinomine mi abbia creato un arco dal mio nodo ad uno di quelli in s.
             boolean flag = false;
             int l = 0;
             while (!flag && l < s.size()) {
                 int x = s.get(l);
-                l=l+1;
                 if (ret.chain[b][x] != 0) {
                     flag = true;
                 }
+                l=l+1;
             }
             if (!flag) {
-                rinomine(b, a, ret.pi, ret.chain, ret.ro);
+                rinomine(b, s.get(gen.nextInt(s.size())), ret.pi, ret.chain, ret.ro);
             }
+            //
             s.add(b);
         }
         sistemaRate(ret, gen);
@@ -77,7 +88,7 @@ public class Involuzioni {
 
     public static void main(String[] args) {
         // TODO code application logic here
-        int n = 5;
+        int n = 6;
         long startTime = System.currentTimeMillis();
         long stopTime;
         long elapsedTime;
@@ -192,11 +203,9 @@ public class Involuzioni {
         return ret;
     }
 }
-
 class Tripla {
 
     double pi[];
     double chain[][];
     int ro[];
 }
-
