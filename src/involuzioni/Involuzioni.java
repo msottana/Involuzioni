@@ -66,7 +66,8 @@ public class Involuzioni {
                 rinomine(a, b, ret.pi, ret.chain, ret.ro);
             }
             //poi invece devo controllare se c'é giá un arco dal nodo di u ad uno qualsiasi di quelli di s, perché potrebbe essere che 
-            //la generazione degli archi con le rinomine mi abbia creato un arco dal mio nodo ad uno di quelli in s.
+            //la generazione degli archi con le rinomine mi abbia creato un arco dal mio nodo ad uno di quelli in s. Se c'é giá allora
+            //non serve crearne altri
             boolean flag = false;
             int l = 0;
             while (!flag && l < s.size()) {
@@ -76,12 +77,14 @@ public class Involuzioni {
                 }
                 l=l+1;
             }
+            //se non ho ancora un arco dal nodo di u a quello di s lo creo prendendo un altro nodo di s a caso a cui connettermi
             if (!flag) {
                 rinomine(b, s.get(gen.nextInt(s.size())), ret.pi, ret.chain, ret.ro);
             }
-            //
+            //poi posso aggiungere il nodo su cui ho lavorato all'insieme s
             s.add(b);
         }
+        //alla fine, dopo aver creato tutti gli archi, sistemo le rate uscenti usando il nodo aggiuntivo
         sistemaRate(ret, gen);
         return ret;
     }
@@ -125,17 +128,10 @@ public class Involuzioni {
         int aR = ro[b];
         int bR = ro[a];
         int temp;
+        //creo arco a-b
         chain[a][b] = gen.nextDouble();
+        //creo arco dalla rinomina di b alla rinomina di a tramite la formula
         chain[aR][bR] = pi[a] * chain[a][b] / pi[b];
-        temp = aR;
-        aR = ro[bR];
-        bR = ro[temp];
-        while (a != aR || b != bR) {
-            chain[aR][bR] = gen.nextDouble();//forse funziona solo perche sono solo involuzioni
-            chain[ro[bR]][ro[aR]] = pi[aR] * chain[aR][bR] / pi[bR];
-            aR = ro[aR];
-            bR = ro[bR];
-        }
     }
 
     //trova il gruppo di rinomine associate a n
