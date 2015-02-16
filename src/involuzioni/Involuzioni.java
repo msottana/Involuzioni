@@ -28,21 +28,21 @@ public class Involuzioni {
         ArrayList<Integer> appoggio = new ArrayList();
         Random gen = new Random();
         int a, b;
-        
+
         for (int i = 0; i < n; i++) {
             appoggio.add(i);
         }
         //qui creo le ro come involuzioni. O da 2 o da 1. Per tutti i nodi n del grafo ma non per l'n+1 che aggiungo per sistemare
         //le rate perché quello deve essere per forza rinominato in se stesso
-        while (!appoggio.isEmpty()){
+        while (!appoggio.isEmpty()) {
             int temp = appoggio.get(gen.nextInt(appoggio.size()));
-            ret.ro[temp]=appoggio.get(gen.nextInt(appoggio.size()));
+            ret.ro[temp] = appoggio.get(gen.nextInt(appoggio.size()));
             ret.ro[ret.ro[temp]] = temp;
             appoggio.remove((Integer) ret.ro[temp]);
             appoggio.remove((Integer) temp);
         }
         //rinomino il nodo aggiunto inse stesso
-        ret.ro[n]=n;
+        ret.ro[n] = n;
         //generazione pi greco per tutti i nodi e li inserisco in u (tranne n+1)
         for (int i = 0; i < n; i++) {
             if (ret.pi[i] == 0) {
@@ -75,7 +75,7 @@ public class Involuzioni {
                 if (ret.chain[b][x] != 0) {
                     flag = true;
                 }
-                l=l+1;
+                l = l + 1;
             }
             //se non ho ancora un arco dal nodo di u a quello di s lo creo prendendo un altro nodo di s a caso a cui connettermi
             if (!flag) {
@@ -95,10 +95,10 @@ public class Involuzioni {
         long startTime = System.currentTimeMillis();
         long stopTime;
         long elapsedTime;
-        Tripla tests[] = new Tripla[1];
+        Tripla tests[] = new Tripla[1];//serve per generare più catene, non viene utilizzato per adesso
         for (int k = 0; k < 1; k++) {
             Tripla chain = getChain(n);
-             stopTime = System.currentTimeMillis();
+            stopTime = System.currentTimeMillis();
             elapsedTime = stopTime - startTime;
             System.out.println("Elapsed time: " + elapsedTime + "ms");
             double archi[][] = chain.chain;
@@ -136,37 +136,6 @@ public class Involuzioni {
         chain[aR][bR] = pi[a] * chain[a][b] / pi[b];
     }
 
-    //trova il gruppo di rinomine associate a n
-    public static ArrayList<Integer> findGroup(int[] ro, int n, ArrayList<Integer> nodi) {
-        ArrayList<Integer> gruppo;
-        int r = ro[n];
-        int nIniz = n;
-        int rIniz = r;
-        gruppo = new ArrayList<>();
-        do {
-            System.out.println(n + " " + r);
-            gruppo.add(n);
-            nodi.remove((Integer) n);//n è l'etichetta, voglio togliere il nodo chiamato n non quello alla posizione n
-            n = r;
-            r = ro[r];
-        } while (n != nIniz && r != rIniz);
-        return gruppo;
-    }
-    //trova la massima rate uscente di un gruppo
-    private static double findMax(ArrayList<Integer> gruppo, double[][] chain, int n) {
-        double temp = 0;
-        double valMax = -1.0;
-        for (Integer nodo : gruppo) {
-            for (int j = 0; j < n; j++) {
-                temp += chain[nodo][j];
-            }
-            if (temp > valMax) {
-                valMax = temp;
-            }
-            temp = 0.0;
-        }
-        return valMax;
-    }
     //per ogni nodo identifica il suo gruppo, il massimo di quel gruppo, e sistema la rate aggiungendo un arco verso il nodo
     //aggiuntivo e crendo poi l'arco in ingresso verso la rinomina (che é in ingresso quindi non va a modificare la rate)
     private static void sistemaRate(Tripla ret) {
@@ -177,15 +146,18 @@ public class Involuzioni {
         }
         while (!nodi.isEmpty()) {
             int nodo = nodi.remove((int) 0);
-            gruppo = findGroup(ret.ro, nodo, nodi);
-            double valMax = findMax(gruppo, ret.chain, ret.chain.length);//valore
-            for (Integer x : gruppo) {
-                double sommaUscenti = trovaSommaUscenti(ret.chain, x);
-                double valArco = valMax - sommaUscenti;
-                System.out.println(sommaUscenti);
-                if (valArco != 0.0) {
-                    ret.chain[x][ret.chain.length - 1] = valArco;
-                    ret.chain[ret.chain.length - 1][ret.ro[x]] = ret.pi[x] * valArco / ret.pi[ret.chain.length - 1];
+            if (ret.ro[nodo] != nodo) {
+                double somma_1 = trovaSommaUscenti(ret.chain, nodo);
+                double somma_2 = trovaSommaUscenti(ret.chain, ret.ro[nodo]);
+                double valArco;
+                if (somma_1 > somma_2) {
+                    valArco = somma_1 - somma_2;
+                    ret.chain[ret.ro[nodo]][ret.chain.length - 1] = valArco;
+                    ret.chain[ret.chain.length - 1][nodo] = ret.pi[nodo] * valArco / ret.pi[ret.chain.length - 1];
+                } else {
+                    valArco = somma_2 - somma_1;
+                    ret.chain[nodo][ret.chain.length - 1] = valArco;
+                    ret.chain[ret.chain.length - 1][ret.ro[nodo]] = ret.pi[ret.ro[nodo]] * valArco / ret.pi[ret.chain.length - 1];
                 }
             }
         }
@@ -200,6 +172,7 @@ public class Involuzioni {
         return ret;
     }
 }
+
 class Tripla {
 
     double pi[];
