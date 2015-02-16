@@ -148,27 +148,45 @@ public class Involuzioni {
         while (!nodi.isEmpty()) {
             int nodo = nodi.remove((int) 0);
             if (ret.ro[nodo] != nodo) {
+                nodi.remove((Integer)ret.ro[nodo]);
                 double somma_1 = trovaSommaUscenti(ret.chain, nodo);
                 double somma_2 = trovaSommaUscenti(ret.chain, ret.ro[nodo]);
                 double valArco;
+                System.out.println("valore uscite di x: " + somma_1);
+                System.out.println("valore uscite di y: " + somma_2);
                 if (somma_1 > somma_2) {
+                    System.out.println("le uscite da x sono piú grandi ");
+                    System.out.println("devo aggiungere");
                     valArco = somma_1 - somma_2;
+                    System.out.println(valArco);
                     ret.chain[ret.ro[nodo]][ret.chain.length - 1] = valArco;
+                    System.out.println("creo l'arco da y x al nodino solitario che vale "+valArco);
                     ret.chain[ret.chain.length - 1][nodo] = ret.pi[ret.ro[nodo]] * valArco / ret.pi[ret.chain.length - 1];
-                } else {
+                    System.out.println("creo l'arco dal nodino solitario a x che vale " +ret.chain[ret.chain.length - 1][nodo] );
+                } else{
+                    if(somma_2 > somma_1) {
+                    System.out.println("le uscite da y sono piú grandi ");
+                    System.out.println("devo aggiungere");
                     valArco = somma_2 - somma_1;
+                    System.out.println(valArco);
                     ret.chain[nodo][ret.chain.length - 1] = valArco;
+                    System.out.println("creo l'arco da x al nodino solitario che vale" + valArco);
                     ret.chain[ret.chain.length - 1][ret.ro[nodo]] = ret.pi[nodo] * valArco / ret.pi[ret.chain.length - 1];
-                }
+                    System.out.println("creo l'arco dal nodino solitario a y che vale" + ret.chain[ret.chain.length - 1][ret.ro[nodo]]);
+                    }
+                }   
             }
         }
-                int flag=0;
-        for(int i = 0; (i<ret.chain.length && flag!=0); i++){
-            if(ret.chain[ret.chain.length-1][i] != 0)
+        int flag=0;
+        for(int i = 0; (i<ret.chain.length && flag==0); i++){
+            if(ret.chain[ret.chain.length-1][i] != 0){
+                System.out.println("ho trovato un nodo");
                 flag=1;
+            }
         }
         if(flag==0){
-            int x = gen.nextInt(ret.chain.length);
+            System.out.println("sono quiiiii nessuno va al povero nodino solitarioooooo");                    
+            int x = gen.nextInt(ret.chain.length-1);
             double val = rinomine(ret.chain.length-1, x , ret.pi, ret.chain, ret.ro);
             ret.chain[ret.chain.length-1][ret.ro[x]]=val;
             ret.chain[ret.ro[x]][ret.chain.length-1]= ret.chain[x][ret.chain.length-1]; 
