@@ -91,7 +91,7 @@ public class Involuzioni {
 
     public static void main(String[] args) {
         // TODO code application logic here
-        int n = 1000;
+        int n = 4;
         long startTime = System.currentTimeMillis();
         long stopTime;
         long elapsedTime;
@@ -139,7 +139,6 @@ public class Involuzioni {
     //per ogni nodo identifica il suo gruppo, il massimo di quel gruppo, e sistema la rate aggiungendo un arco verso il nodo
     //aggiuntivo e crendo poi l'arco in ingresso verso la rinomina (che é in ingresso quindi non va a modificare la rate)
     private static void sistemaRate(Tripla ret) {
-        ArrayList<Integer> gruppo;
         ArrayList<Integer> nodi = new ArrayList<>();
         for (int i = 0; i < ret.chain.length; i++) {
             nodi.add(i);
