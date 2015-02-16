@@ -126,7 +126,7 @@ public class Involuzioni {
         System.out.println("Elapsed time: " + elapsedTime + "ms");
     }
 
-    private static void rinomine(int a, int b, double[] pi, double[][] chain, int[] ro) {
+    private static double rinomine(int a, int b, double[] pi, double[][] chain, int[] ro) {
         Random gen = new Random();
         int aR = ro[b];
         int bR = ro[a];
@@ -134,12 +134,14 @@ public class Involuzioni {
         chain[a][b] = gen.nextDouble();
         //creo arco dalla rinomina di b alla rinomina di a tramite la formula
         chain[aR][bR] = pi[a] * chain[a][b] / pi[b];
+        return chain[a][b];
     }
 
     //per ogni nodo identifica il suo gruppo, il massimo di quel gruppo, e sistema la rate aggiungendo un arco verso il nodo
     //aggiuntivo e crendo poi l'arco in ingresso verso la rinomina (che é in ingresso quindi non va a modificare la rate)
     private static void sistemaRate(Tripla ret) {
         ArrayList<Integer> nodi = new ArrayList<>();
+        Random gen = new Random();
         for (int i = 0; i < ret.chain.length; i++) {
             nodi.add(i);
         }
@@ -159,6 +161,18 @@ public class Involuzioni {
                     ret.chain[ret.chain.length - 1][ret.ro[nodo]] = ret.pi[nodo] * valArco / ret.pi[ret.chain.length - 1];
                 }
             }
+        }
+                int flag=0;
+        for(int i = 0; (i<ret.chain.length && flag!=0); i++){
+            if(ret.chain[ret.chain.length-1][i] != 0)
+                flag=1;
+        }
+        if(flag==0){
+            int x = gen.nextInt(ret.chain.length);
+            double val = rinomine(ret.chain.length-1, x , ret.pi, ret.chain, ret.ro);
+            ret.chain[ret.chain.length-1][ret.ro[x]]=val;
+            ret.chain[ret.ro[x]][ret.chain.length-1]= ret.chain[x][ret.chain.length-1]; 
+            
         }
     }
 
