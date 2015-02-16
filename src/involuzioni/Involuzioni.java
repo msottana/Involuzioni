@@ -152,11 +152,11 @@ public class Involuzioni {
                 if (somma_1 > somma_2) {
                     valArco = somma_1 - somma_2;
                     ret.chain[ret.ro[nodo]][ret.chain.length - 1] = valArco;
-                    ret.chain[ret.chain.length - 1][nodo] = ret.pi[nodo] * valArco / ret.pi[ret.chain.length - 1];
+                    ret.chain[ret.chain.length - 1][nodo] = ret.pi[ret.ro[nodo]] * valArco / ret.pi[ret.chain.length - 1];
                 } else {
                     valArco = somma_2 - somma_1;
                     ret.chain[nodo][ret.chain.length - 1] = valArco;
-                    ret.chain[ret.chain.length - 1][ret.ro[nodo]] = ret.pi[ret.ro[nodo]] * valArco / ret.pi[ret.chain.length - 1];
+                    ret.chain[ret.chain.length - 1][ret.ro[nodo]] = ret.pi[nodo] * valArco / ret.pi[ret.chain.length - 1];
                 }
             }
         }
