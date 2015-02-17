@@ -30,7 +30,7 @@ public class Involuzioni {
         ArrayList<Integer> appoggio = new ArrayList();
         Random gen = new Random();
         int a, b;
-
+        double sommaPi = 0;
         for (int i = 0; i < n; i++) {
             appoggio.add(i);
         }
@@ -52,9 +52,21 @@ public class Involuzioni {
             }
             ret.pi[ret.ro[i]] = ret.pi[i];
             u.add(i);
+            sommaPi += ret.pi[i];
         }
         //genero anche la pi del nodo fittizio
         ret.pi[n] = gen.nextDouble();
+        sommaPi += ret.pi[n];
+        /*
+         * La somma dei pi deve essere uguale a uno
+         */
+        for(int i = 0; i < ret.pi.length; i++) {
+            ret.pi[i] /= sommaPi;
+        }
+        sommaPi = 0;
+        for(int i = 0; i < ret.pi.length; i++) {
+            sommaPi += ret.pi[i];
+        }
         //aggiungo un nodo all'insieme iniziale
         s.add(u.remove(gen.nextInt(u.size())));
         //generazione degli archi: finché ci sono nodi in u prendo un nodo da s, ne rimuovo uno da u e faccio i controlli per vedere se
