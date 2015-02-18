@@ -3,6 +3,9 @@
  */
 package involuzioni;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -60,11 +63,11 @@ public class Involuzioni {
         /*
          * La somma dei pi deve essere uguale a uno
          */
-        for(int i = 0; i < ret.pi.length; i++) {
+        for (int i = 0; i < ret.pi.length; i++) {
             ret.pi[i] /= sommaPi;
         }
         sommaPi = 0;
-        for(int i = 0; i < ret.pi.length; i++) {
+        for (int i = 0; i < ret.pi.length; i++) {
             sommaPi += ret.pi[i];
         }
         //aggiungo un nodo all'insieme iniziale
@@ -103,39 +106,54 @@ public class Involuzioni {
         return ret;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // TODO code application logic here
-        int n = 10;
+        int n = 10;//numero di nodi
+        int l = 2;//numero di catene da generare
         long startTime = System.currentTimeMillis();
         long stopTime;
         long elapsedTime;
-        NumberFormat formatter = new DecimalFormat("#0.0000");
-        Tripla tests[] = new Tripla[1];//serve per generare più catene, non viene utilizzato per adesso
-        for (int k = 0; k < 1; k++) {
-            Tripla chain = getChain(n);
+        NumberFormat formatter = new DecimalFormat("#0.0000000000000000");
+        BufferedWriter out = new BufferedWriter(new FileWriter("cateneRoReversibili.txt"));
+        //scrive sul file il numero di catene e il numero di nodi per le catene generate
+        out.write(l+"");
+        out.newLine();
+        out.write((n + 1)+"");
+        out.newLine();
+        //per adesso supporta soltanto la generazione di catene con lo stesso numero di nodi
+        for (int k = 0; k < l; k++) {
+            Tripla chain = getChain(n);//tutte le catene hanno lo stesso numero di nodi
             stopTime = System.currentTimeMillis();
             elapsedTime = stopTime - startTime;
             System.out.println("Elapsed time: " + elapsedTime + "ms");
             double archi[][] = chain.chain;
             double nodi[] = chain.pi;
-            tests[k] = chain;
             for (int i = 0; i < n + 1; i++) {
                 System.out.print(nodi[i] + " ");
             }
             System.out.println("");
-            for (int i = 0; i < n + 1; i++) {
+            out.write(chain.ro[0]+"");
+            System.out.print(0 + "->" + chain.ro[0] + "/");
+            for (int i = 1; i < n + 1; i++) {
+                out.write("," + chain.ro[i]);
                 System.out.print(i + "->" + chain.ro[i] + "/");
             }
+            out.newLine();
             System.out.println("");
             System.out.println("");
             for (int i = 0; i < n + 1; i++) {
-                for (int j = 0; j < n + 1; j++) {
+                System.out.print(formatter.format(archi[i][0]) + " | ");
+                out.write(archi[i][0] + "");
+                for (int j = 1; j < n + 1; j++) {
                     System.out.print(formatter.format(archi[i][j]) + " | ");
+                    out.write("," + archi[i][j]);
                 }
                 System.out.println("");
+                out.newLine();
             }
             System.out.println("---------------------------------------------");
         }
+        out.close();
         stopTime = System.currentTimeMillis();
         elapsedTime = stopTime - startTime;
         System.out.println("Elapsed time: " + elapsedTime + "ms");
@@ -203,5 +221,3 @@ public class Involuzioni {
         return ret;
     }
 }
-
-
