@@ -10,6 +10,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 /**
  *
@@ -108,13 +109,20 @@ public class Involuzioni {
 
     public static void main(String[] args) throws IOException {
         // TODO code application logic here
-        int n = 10;//numero di nodi
-        int l = 2;//numero di catene da generare
-        long startTime = System.currentTimeMillis();
+        int n;//numero di nodi
+        int l;//numero di catene da generare
+        long startTime;
         long stopTime;
         long elapsedTime;
+        Scanner tastiera = new Scanner(System.in);
         NumberFormat formatter = new DecimalFormat("#0.0000000000000000");
         BufferedWriter out = new BufferedWriter(new FileWriter("cateneRoReversibili.txt"));
+        System.out.print("Inserire il numero di nodi (verrà incrementato di uno): ");
+        n = tastiera.nextInt();
+        System.out.print("Inserire il numero di catene da generare: ");
+        l = tastiera.nextInt();
+        System.out.println("Generazione di " + l + " catena/e ogniuna composta da " + (n + 1) + " nodi.");
+        startTime = System.currentTimeMillis();
         //scrive sul file il numero di catene e il numero di nodi per le catene generate
         out.write(l+"");
         out.newLine();
