@@ -124,9 +124,9 @@ public class Involuzioni {
         System.out.println("Generazione di " + l + " catena/e ogniuna composta da " + (n + 1) + " nodi.");
         startTime = System.currentTimeMillis();
         //scrive sul file il numero di catene e il numero di nodi per le catene generate
-        out.write(l+"");
+        out.write(l + "");
         out.newLine();
-        out.write((n + 1)+"");
+        out.write((n + 1) + "");
         out.newLine();
         //per adesso supporta soltanto la generazione di catene con lo stesso numero di nodi
         for (int k = 0; k < l; k++) {
@@ -140,7 +140,7 @@ public class Involuzioni {
                 System.out.print(nodi[i] + " ");
             }
             System.out.println("");
-            out.write(chain.ro[0]+"");
+            out.write(chain.ro[0] + "");
             System.out.print(0 + "->" + chain.ro[0] + "/");
             for (int i = 1; i < n + 1; i++) {
                 out.write("," + chain.ro[i]);
