@@ -21,12 +21,12 @@ public class Involuzioni {
     /*
      Questa funzione serve per creare la tripla ret contenente la matrice degli atchi, le pi e le ro.
      */
-    public static Tripla getChain(int n) {
-        Tripla ret = new Tripla();
+    public static Triple getChain(int n) {
+        Triple ret = new Triple();
         //generiamo n nodi, e poi 1 in piú per sistemare le rate uscenti
         ret.chain = new double[n + 1][n + 1];
         ret.pi = new double[n + 1];
-        ret.ro = new int[n + 1];
+        ret.rho = new int[n + 1];
         // s é l'insieme che contiene tutti i nodi che formano tra loro una componente connessa
         ArrayList<Integer> s = new ArrayList();
         //u é l'insieme dei nodi che non si trovano nella componenete connessa
@@ -42,19 +42,19 @@ public class Involuzioni {
         //le rate perché quello deve essere per forza rinominato in se stesso
         while (!appoggio.isEmpty()) {
             int temp = appoggio.get(gen.nextInt(appoggio.size()));
-            ret.ro[temp] = appoggio.get(gen.nextInt(appoggio.size()));
-            ret.ro[ret.ro[temp]] = temp;
-            appoggio.remove((Integer) ret.ro[temp]);
+            ret.rho[temp] = appoggio.get(gen.nextInt(appoggio.size()));
+            ret.rho[ret.rho[temp]] = temp;
+            appoggio.remove((Integer) ret.rho[temp]);
             appoggio.remove((Integer) temp);
         }
         //rinomino il nodo aggiunto inse stesso
-        ret.ro[n] = n;
+        ret.rho[n] = n;
         //generazione pi greco per tutti i nodi e li inserisco in u (tranne n+1)
         for (int i = 0; i < n; i++) {
             if (ret.pi[i] == 0) {
                 ret.pi[i] = gen.nextDouble();
             }
-            ret.pi[ret.ro[i]] = ret.pi[i];
+            ret.pi[ret.rho[i]] = ret.pi[i];
             u.add(i);
             sommaPi += ret.pi[i];
         }
@@ -81,7 +81,7 @@ public class Involuzioni {
             //se non c'é l'arco da a fino a b lo creo. Non devo controllare che non ci sia giá un altro arco da un nodo di s che va verso
             //u perché nel momento in cui lo metto, per definizione del mio programma, connetto tutto il nodo nella componente connessa
             if (ret.chain[a][b] == 0) {
-                rinomine(a, b, ret.pi, ret.chain, ret.ro);
+                rinomine(a, b, ret.pi, ret.chain, ret.rho);
             }
             //poi invece devo controllare se c'é giá un arco dal nodo di u ad uno qualsiasi di quelli di s, perché potrebbe essere che 
             //la generazione degli archi con le rinomine mi abbia creato un arco dal mio nodo ad uno di quelli in s. Se c'é giá allora
@@ -97,7 +97,7 @@ public class Involuzioni {
             }
             //se non ho ancora un arco dal nodo di u a quello di s lo creo prendendo un altro nodo di s a caso a cui connettermi
             if (!flag) {
-                rinomine(b, s.get(gen.nextInt(s.size())), ret.pi, ret.chain, ret.ro);
+                rinomine(b, s.get(gen.nextInt(s.size())), ret.pi, ret.chain, ret.rho);
             }
             //poi posso aggiungere il nodo su cui ho lavorato all'insieme s
             s.add(b);
@@ -116,7 +116,7 @@ public class Involuzioni {
         long elapsedTime;
         Scanner tastiera = new Scanner(System.in);
         NumberFormat formatter = new DecimalFormat("#0.0000000000000000");
-        BufferedWriter out = new BufferedWriter(new FileWriter("cateneRoReversibili.txt"));
+        BufferedWriter out = new BufferedWriter(new FileWriter("inputRhoReversible.txt"));
         System.out.print("Inserire il numero di nodi (verrà incrementato di uno): ");
         n = tastiera.nextInt();
         System.out.print("Inserire il numero di catene da generare: ");
@@ -130,21 +130,21 @@ public class Involuzioni {
         out.newLine();
         //per adesso supporta soltanto la generazione di catene con lo stesso numero di nodi
         for (int k = 0; k < l; k++) {
-            Tripla chain = getChain(n);//tutte le catene hanno lo stesso numero di nodi
+            Triple chain = getChain(n);//tutte le catene hanno lo stesso numero di nodi
             stopTime = System.currentTimeMillis();
             elapsedTime = stopTime - startTime;
             System.out.println("Elapsed time: " + elapsedTime + "ms");
-            double archi[][] = chain.chain;
+            double archi[][] = converter(chain.chain);
             double nodi[] = chain.pi;
             for (int i = 0; i < n + 1; i++) {
                 System.out.print(nodi[i] + " ");
             }
             System.out.println("");
-            out.write(chain.ro[0] + "");
-            System.out.print(0 + "->" + chain.ro[0] + "/");
+            out.write(chain.rho[0] + "");
+            System.out.print(0 + "->" + chain.rho[0] + "/");
             for (int i = 1; i < n + 1; i++) {
-                out.write("," + chain.ro[i]);
-                System.out.print(i + "->" + chain.ro[i] + "/");
+                out.write("," + chain.rho[i]);
+                System.out.print(i + "->" + chain.rho[i] + "/");
             }
             out.newLine();
             System.out.println("");
@@ -167,20 +167,20 @@ public class Involuzioni {
         System.out.println("Elapsed time: " + elapsedTime + "ms");
     }
 
-    private static double rinomine(int a, int b, double[] pi, double[][] chain, int[] ro) {
+    private static void /*double*/rinomine(int a, int b, double[] pi, double[][] chain, int[] ro) {
         Random gen = new Random();
-        int aR = ro[b];
-        int bR = ro[a];
+        //int aR = ro[b];
+        //int bR = ro[a];
         //creo arco a-b
         chain[a][b] = gen.nextDouble();
         //creo arco dalla rinomina di b alla rinomina di a tramite la formula
-        chain[aR][bR] = pi[a] * chain[a][b] / pi[b];
-        return chain[a][b];
+        chain[ro[b]][ro[a]] = pi[a] * chain[a][b] / pi[b];
+        //return chain[a][b];
     }
 
     //per ogni nodo identifica il suo gruppo, il massimo di quel gruppo, e sistema la rate aggiungendo un arco verso il nodo
     //aggiuntivo e crendo poi l'arco in ingresso verso la rinomina (che é in ingresso quindi non va a modificare la rate)
-    private static void sistemaRate(Tripla ret) {
+    private static void sistemaRate(Triple ret) {
         ArrayList<Integer> nodi = new ArrayList<>();
         Random gen = new Random();
         for (int i = 0; i < ret.chain.length; i++) {
@@ -188,20 +188,21 @@ public class Involuzioni {
         }
         while (!nodi.isEmpty()) {
             int nodo = nodi.remove((int) 0);
-            if (ret.ro[nodo] != nodo) {
-                nodi.remove((Integer) ret.ro[nodo]);
+            if (ret.rho[nodo] != nodo) {
+                nodi.remove((Integer) ret.rho[nodo]);
                 double somma_1 = trovaSommaUscenti(ret.chain, nodo);
-                double somma_2 = trovaSommaUscenti(ret.chain, ret.ro[nodo]);
+                double somma_2 = trovaSommaUscenti(ret.chain, ret.rho[nodo]);
                 double valArco;
                 if (somma_1 > somma_2) {
                     valArco = somma_1 - somma_2;
-                    ret.chain[ret.ro[nodo]][ret.chain.length - 1] = valArco;
-                    ret.chain[ret.chain.length - 1][nodo] = ret.pi[ret.ro[nodo]] * valArco / ret.pi[ret.chain.length - 1];
+                    ret.chain[ret.rho[nodo]][ret.chain.length - 1] = valArco;
+                    ret.chain[ret.chain.length - 1][nodo] = ret.pi[ret.rho[nodo]] * valArco / ret.pi[ret.chain.length - 1];
                 } else {
                     if (somma_2 > somma_1) {
                         valArco = somma_2 - somma_1;
+                        //TODO verificare se si possono effettivamente togliere
                         ret.chain[nodo][ret.chain.length - 1] = valArco;
-                        ret.chain[ret.chain.length - 1][ret.ro[nodo]] = ret.pi[nodo] * valArco / ret.pi[ret.chain.length - 1];
+                        ret.chain[ret.chain.length - 1][ret.rho[nodo]] = ret.pi[nodo] * valArco / ret.pi[ret.chain.length - 1];
                     }
                 }
             }
@@ -213,10 +214,11 @@ public class Involuzioni {
             }
         }
         if (flag == 0) {
+            //TODO verificare se l'aggiunta degli archi dopo rinomine sia inutile
             int x = gen.nextInt(ret.chain.length - 1);
-            double val = rinomine(ret.chain.length - 1, x, ret.pi, ret.chain, ret.ro);
-            ret.chain[ret.chain.length - 1][ret.ro[x]] = val;
-            ret.chain[ret.ro[x]][ret.chain.length - 1] = ret.chain[x][ret.chain.length - 1];
+            /*double val = */rinomine(ret.chain.length - 1, x, ret.pi, ret.chain, ret.rho);
+            ret.chain[ret.chain.length - 1][ret.rho[x]] = ret.chain[ret.chain.length - 1][x];
+            ret.chain[ret.rho[x]][ret.chain.length - 1] = ret.chain[x][ret.chain.length - 1];
         }
     }
 
@@ -228,4 +230,31 @@ public class Involuzioni {
         }
         return ret;
     }
+    
+    public static double[][] converter(double chain[][]) {
+        int n = chain.length;
+        double max = 0.0;
+        double cappio;
+        for (int i = 0; i < n; i++) {
+            double somma = 0.0;
+            for (int j = 0; j < n; j++) {
+                somma += chain[i][j];
+            }
+            if (somma >= max) {
+                max = somma;
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            cappio = 1.0;
+            for (int j = 0; j < n; j++) {
+                chain[i][j] /= max;
+                cappio -= chain[i][j];
+            }
+            if (cappio > 0) {
+                chain[i][i] = cappio;//cappio con peso uguale a ciò che manca per avere la somma dei nodi uscenti pari a uno
+            }
+        }
+        return chain;
+    }
+    
 }
