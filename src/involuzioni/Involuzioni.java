@@ -19,75 +19,68 @@ import java.util.Scanner;
 public class Involuzioni {
 
     /*
-     Questa funzione serve per creare la tripla ret contenente la matrice degli atchi, le pi e le ro.
+     * This function generates a Triple ret which contains the probability
+     * matrix, the pi vector and the rho vector.
      */
     public static Triple getChain(int n) {
         Triple ret = new Triple();
-        //generiamo n nodi, e poi 1 in piú per sistemare le rate uscenti
         ret.chain = new double[n + 1][n + 1];
         ret.pi = new double[n + 1];
         ret.rho = new int[n + 1];
-        // s é l'insieme che contiene tutti i nodi che formano tra loro una componente connessa
+        //s is the set that contains all the vertices of the generated connected component
         ArrayList<Integer> s = new ArrayList();
-        //u é l'insieme dei nodi che non si trovano nella componenete connessa
+        //u is the set that contains the remaining nodes of the graph whic aren't in s
         ArrayList<Integer> u = new ArrayList();
-        ArrayList<Integer> appoggio = new ArrayList();
+        ArrayList<Integer> support = new ArrayList();
         Random gen = new Random();
         int a, b;
-        double sommaPi = 0;
+        double sumPi = 0;
         for (int i = 0; i < n; i++) {
-            appoggio.add(i);
+            support.add(i);
         }
-        //qui creo le ro come involuzioni. O da 2 o da 1. Per tutti i nodi n del grafo ma non per l'n+1 che aggiungo per sistemare
-        //le rate perché quello deve essere per forza rinominato in se stesso
-        while (!appoggio.isEmpty()) {
-            int temp = appoggio.get(gen.nextInt(appoggio.size()));
-            ret.rho[temp] = appoggio.get(gen.nextInt(appoggio.size()));
+        //Generation of the renaming function
+        while (!support.isEmpty()) {
+            int temp = support.get(gen.nextInt(support.size()));
+            ret.rho[temp] = support.get(gen.nextInt(support.size()));
             ret.rho[ret.rho[temp]] = temp;
-            appoggio.remove((Integer) ret.rho[temp]);
-            appoggio.remove((Integer) temp);
+            support.remove((Integer) ret.rho[temp]);
+            support.remove((Integer) temp);
         }
-        //rinomino il nodo aggiunto inse stesso
-        ret.rho[n] = n;
-        //generazione pi greco per tutti i nodi e li inserisco in u (tranne n+1)
+        ret.rho[n] = n;//Aditional vertex used to fix the outgoing rate of some vertices
+        //generation of the pi vector
         for (int i = 0; i < n; i++) {
             if (ret.pi[i] == 0) {
                 ret.pi[i] = gen.nextDouble();
             }
             ret.pi[ret.rho[i]] = ret.pi[i];
             u.add(i);
-            sommaPi += ret.pi[i];
+            sumPi += ret.pi[i];
         }
-        //genero anche la pi del nodo fittizio
         ret.pi[n] = gen.nextDouble();
-        sommaPi += ret.pi[n];
-        /*
-         * La somma dei pi deve essere uguale a uno
-         */
+        sumPi += ret.pi[n];
+        //All pi sum to unity
         for (int i = 0; i < ret.pi.length; i++) {
-            ret.pi[i] /= sommaPi;
+            ret.pi[i] /= sumPi;
         }
-        sommaPi = 0;
+        sumPi = 0;
         for (int i = 0; i < ret.pi.length; i++) {
-            sommaPi += ret.pi[i];
+            sumPi += ret.pi[i];
         }
-        //aggiungo un nodo all'insieme iniziale
+        //Add the first node to s
         s.add(u.remove(gen.nextInt(u.size())));
-        //generazione degli archi: finché ci sono nodi in u prendo un nodo da s, ne rimuovo uno da u e faccio i controlli per vedere se
-        //fa giá parte o no della cc
+        //generation of edges, while u is not empty we generate an edge between a vertex of s and a vertex of u
+        //then we check if u is connected to s
         while (!u.isEmpty()) {
             a = s.get(gen.nextInt(s.size()));
             b = u.remove(gen.nextInt(u.size()));
-            //se non c'é l'arco da a fino a b lo creo. Non devo controllare che non ci sia giá un altro arco da un nodo di s che va verso
-            //u perché nel momento in cui lo metto, per definizione del mio programma, connetto tutto il nodo nella componente connessa
+            boolean flag;
+            int l;
+            //If the edge between a and b doesn't exist we create it
             if (ret.chain[a][b] == 0) {
-                rinomine(a, b, ret.pi, ret.chain, ret.rho);
+                rhoBalanceEquation(a, b, ret.pi, ret.chain, ret.rho);
             }
-            //poi invece devo controllare se c'é giá un arco dal nodo di u ad uno qualsiasi di quelli di s, perché potrebbe essere che 
-            //la generazione degli archi con le rinomine mi abbia creato un arco dal mio nodo ad uno di quelli in s. Se c'é giá allora
-            //non serve crearne altri
-            boolean flag = false;
-            int l = 0;
+            flag = false;
+            l = 0;
             while (!flag && l < s.size()) {
                 int x = s.get(l);
                 if (ret.chain[b][x] != 0) {
@@ -95,49 +88,48 @@ public class Involuzioni {
                 }
                 l = l + 1;
             }
-            //se non ho ancora un arco dal nodo di u a quello di s lo creo prendendo un altro nodo di s a caso a cui connettermi
+            //If there is no edge from b to s we create it to connect b to s
             if (!flag) {
-                rinomine(b, s.get(gen.nextInt(s.size())), ret.pi, ret.chain, ret.rho);
+                rhoBalanceEquation(b, s.get(gen.nextInt(s.size())), ret.pi, ret.chain, ret.rho);
             }
-            //poi posso aggiungere il nodo su cui ho lavorato all'insieme s
+            //The vertex b can be added to s
             s.add(b);
         }
-        //alla fine, dopo aver creato tutti gli archi, sistemo le rate uscenti usando il nodo aggiuntivo
-        sistemaRate(ret);
+        //At the end we use fixRate to fix the outgoing rate of all vertices
+        fixRate(ret);
         return ret;
     }
 
     public static void main(String[] args) throws IOException {
-        // TODO code application logic here
-        int n;//numero di nodi
-        int l;//numero di catene da generare
+        int n;//number of vertices
+        int l;//number of chains to generate
         long startTime;
         long stopTime;
         long elapsedTime;
-        Scanner tastiera = new Scanner(System.in);
+        Scanner keyboard = new Scanner(System.in);
         NumberFormat formatter = new DecimalFormat("#0.0000000000000000");
+        //This file will be the imput file for VerifiRhoReversibility
         BufferedWriter out = new BufferedWriter(new FileWriter("inputRhoReversible.txt"));
-        System.out.print("Inserire il numero di nodi (verrà incrementato di uno): ");
-        n = tastiera.nextInt();
-        System.out.print("Inserire il numero di catene da generare: ");
-        l = tastiera.nextInt();
-        System.out.println("Generazione di " + l + " catena/e ogniuna composta da " + (n + 1) + " nodi.");
+        System.out.print("Insert the number of vertices (the number will be increased by 1): ");
+        n = keyboard.nextInt();
+        System.out.print("Insert the number of chains to generate: ");
+        l = keyboard.nextInt();
+        System.out.println("Generation of " + l + " chains each composed by " + (n + 1) + " vertices.");
         startTime = System.currentTimeMillis();
-        //scrive sul file il numero di catene e il numero di nodi per le catene generate
+        //Write the number of chains and vertices in the output file
         out.write(l + "");
         out.newLine();
         out.write((n + 1) + "");
         out.newLine();
-        //per adesso supporta soltanto la generazione di catene con lo stesso numero di nodi
         for (int k = 0; k < l; k++) {
-            Triple chain = getChain(n);//tutte le catene hanno lo stesso numero di nodi
+            Triple chain = getChain(n);//all chains have the same number of vertices
             stopTime = System.currentTimeMillis();
             elapsedTime = stopTime - startTime;
             System.out.println("Elapsed time: " + elapsedTime + "ms");
-            double archi[][] = converter(chain.chain);
-            double nodi[] = chain.pi;
+            double[][] edges = converter(chain.chain);
+            double[] vertices = chain.pi;
             for (int i = 0; i < n + 1; i++) {
-                System.out.print(nodi[i] + " ");
+                System.out.print(vertices[i] + " ");
             }
             System.out.println("");
             out.write(chain.rho[0] + "");
@@ -150,11 +142,11 @@ public class Involuzioni {
             System.out.println("");
             System.out.println("");
             for (int i = 0; i < n + 1; i++) {
-                System.out.print(formatter.format(archi[i][0]) + " | ");
-                out.write(archi[i][0] + "");
+                System.out.print(formatter.format(edges[i][0]) + " | ");
+                out.write(edges[i][0] + "");
                 for (int j = 1; j < n + 1; j++) {
-                    System.out.print(formatter.format(archi[i][j]) + " | ");
-                    out.write("," + archi[i][j]);
+                    System.out.print(formatter.format(edges[i][j]) + " | ");
+                    out.write("," + edges[i][j]);
                 }
                 System.out.println("");
                 out.newLine();
@@ -167,42 +159,37 @@ public class Involuzioni {
         System.out.println("Elapsed time: " + elapsedTime + "ms");
     }
 
-    private static void /*double*/rinomine(int a, int b, double[] pi, double[][] chain, int[] ro) {
+    private static void rhoBalanceEquation(int a, int b, double[] pi, double[][] chain, int[] ro) {
         Random gen = new Random();
-        //int aR = ro[b];
-        //int bR = ro[a];
-        //creo arco a-b
         chain[a][b] = gen.nextDouble();
-        //creo arco dalla rinomina di b alla rinomina di a tramite la formula
         chain[ro[b]][ro[a]] = pi[a] * chain[a][b] / pi[b];
-        //return chain[a][b];
     }
 
-    //per ogni nodo identifica il suo gruppo, il massimo di quel gruppo, e sistema la rate aggiungendo un arco verso il nodo
-    //aggiuntivo e crendo poi l'arco in ingresso verso la rinomina (che é in ingresso quindi non va a modificare la rate)
-    private static void sistemaRate(Triple ret) {
-        ArrayList<Integer> nodi = new ArrayList<>();
+    //fixRate fixs the outgoing rate of all vertices in the chain, whe it finds a vertex with different outgoing rate than
+    //his renaming vertex it fix the difference generating an edge between the found vertex and the support node and another edge from
+    //the support node to the renaming vertex
+    private static void fixRate(Triple ret) {
+        ArrayList<Integer> vertices = new ArrayList<>();
         Random gen = new Random();
         for (int i = 0; i < ret.chain.length; i++) {
-            nodi.add(i);
+            vertices.add(i);
         }
-        while (!nodi.isEmpty()) {
-            int nodo = nodi.remove((int) 0);
-            if (ret.rho[nodo] != nodo) {
-                nodi.remove((Integer) ret.rho[nodo]);
-                double somma_1 = trovaSommaUscenti(ret.chain, nodo);
-                double somma_2 = trovaSommaUscenti(ret.chain, ret.rho[nodo]);
-                double valArco;
-                if (somma_1 > somma_2) {
-                    valArco = somma_1 - somma_2;
-                    ret.chain[ret.rho[nodo]][ret.chain.length - 1] = valArco;
-                    ret.chain[ret.chain.length - 1][nodo] = ret.pi[ret.rho[nodo]] * valArco / ret.pi[ret.chain.length - 1];
+        while (!vertices.isEmpty()) {
+            int vertex = vertices.remove((int) 0);
+            if (ret.rho[vertex] != vertex) {
+                vertices.remove((Integer) ret.rho[vertex]);
+                double sum1 = outgoingRate(ret.chain, vertex);
+                double sum2 = outgoingRate(ret.chain, ret.rho[vertex]);
+                double edgeValue;
+                if (sum1 > sum2) {
+                    edgeValue = sum1 - sum2;
+                    ret.chain[ret.rho[vertex]][ret.chain.length - 1] = edgeValue;
+                    ret.chain[ret.chain.length - 1][vertex] = ret.pi[ret.rho[vertex]] * edgeValue / ret.pi[ret.chain.length - 1];
                 } else {
-                    if (somma_2 > somma_1) {
-                        valArco = somma_2 - somma_1;
-                        //TODO verificare se si possono effettivamente togliere
-                        ret.chain[nodo][ret.chain.length - 1] = valArco;
-                        ret.chain[ret.chain.length - 1][ret.rho[nodo]] = ret.pi[nodo] * valArco / ret.pi[ret.chain.length - 1];
+                    if (sum2 > sum1) {
+                        edgeValue = sum2 - sum1;
+                        ret.chain[vertex][ret.chain.length - 1] = edgeValue;
+                        ret.chain[ret.chain.length - 1][ret.rho[vertex]] = ret.pi[vertex] * edgeValue / ret.pi[ret.chain.length - 1];
                     }
                 }
             }
@@ -214,16 +201,15 @@ public class Involuzioni {
             }
         }
         if (flag == 0) {
-            //TODO verificare se l'aggiunta degli archi dopo rinomine sia inutile
             int x = gen.nextInt(ret.chain.length - 1);
-            /*double val = */rinomine(ret.chain.length - 1, x, ret.pi, ret.chain, ret.rho);
+            rhoBalanceEquation(ret.chain.length - 1, x, ret.pi, ret.chain, ret.rho);
             ret.chain[ret.chain.length - 1][ret.rho[x]] = ret.chain[ret.chain.length - 1][x];
             ret.chain[ret.rho[x]][ret.chain.length - 1] = ret.chain[x][ret.chain.length - 1];
         }
     }
 
-    //calcola la somma delle rate uscenti
-    private static double trovaSommaUscenti(double[][] chain, Integer x) {
+    //Returns the outgoing rate of a given vertex
+    private static double outgoingRate(double[][] chain, Integer x) {
         double ret = 0;
         for (int j = 0; j < chain.length; j++) {
             ret += chain[x][j];
@@ -234,24 +220,25 @@ public class Involuzioni {
     public static double[][] converter(double chain[][]) {
         int n = chain.length;
         double max = 0.0;
-        double cappio;
+        double loop;
+        double sum;
         for (int i = 0; i < n; i++) {
-            double somma = 0.0;
+            sum = 0.0;
             for (int j = 0; j < n; j++) {
-                somma += chain[i][j];
+                sum += chain[i][j];
             }
-            if (somma >= max) {
-                max = somma;
+            if (sum >= max) {
+                max = sum;
             }
         }
         for (int i = 0; i < n; i++) {
-            cappio = 1.0;
+            loop = 1.0;
             for (int j = 0; j < n; j++) {
                 chain[i][j] /= max;
-                cappio -= chain[i][j];
+                loop -= chain[i][j];
             }
-            if (cappio > 0) {
-                chain[i][i] = cappio;//cappio con peso uguale a ciò che manca per avere la somma dei nodi uscenti pari a uno
+            if (loop > 0.0000000001) {
+                chain[i][i] = loop;//loop used to make te outgoing rates of the current vertex sum to 1
             }
         }
         return chain;
