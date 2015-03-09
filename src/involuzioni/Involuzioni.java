@@ -29,7 +29,7 @@ public class Involuzioni {
         ret.rho = new int[n + 1];
         //s is the set that contains all the vertices of the generated connected component
         ArrayList<Integer> s = new ArrayList();
-        //u is the set that contains the remaining nodes of the graph whic aren't in s
+        //u is the set that contains the remaining nodes of the graph which are not in s
         ArrayList<Integer> u = new ArrayList();
         ArrayList<Integer> support = new ArrayList();
         Random gen = new Random();
@@ -165,8 +165,8 @@ public class Involuzioni {
         chain[ro[b]][ro[a]] = pi[a] * chain[a][b] / pi[b];
     }
 
-    //fixRate fixs the outgoing rate of all vertices in the chain, whe it finds a vertex with different outgoing rate than
-    //his renaming vertex it fix the difference generating an edge between the found vertex and the support node and another edge from
+    //fixRate fixes the outgoing rate of all vertices in the chain, when it finds a vertex with different outgoing rate than
+    //his renaming vertex it will fix the difference generating an edge between the found vertex and the support node and another edge from
     //the support node to the renaming vertex
     private static void fixRate(Triple ret) {
         ArrayList<Integer> vertices = new ArrayList<>();
