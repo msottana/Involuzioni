@@ -24,12 +24,13 @@ public class Involuzioni {
      */
     public static Triple getChain(int n) {
         Triple ret = new Triple();
+        //we create an additional vertex used to fix the outgoing rate of the renaming vertex 
         ret.chain = new double[n + 1][n + 1];
         ret.pi = new double[n + 1];
         ret.rho = new int[n + 1];
         //s is the set that contains all the vertices of the generated connected component
         ArrayList<Integer> s = new ArrayList();
-        //u is the set that contains the remaining nodes of the graph which are not in s
+        //u is the set that contains the remaining nodes of the graph whic aren't in s
         ArrayList<Integer> u = new ArrayList();
         ArrayList<Integer> support = new ArrayList();
         Random gen = new Random();
@@ -73,24 +74,14 @@ public class Involuzioni {
         while (!u.isEmpty()) {
             a = s.get(gen.nextInt(s.size()));
             b = u.remove(gen.nextInt(u.size()));
-            boolean flag;
-            int l;
             //If the edge between a and b doesn't exist we create it
             if (ret.chain[a][b] == 0) {
                 rhoBalanceEquation(a, b, ret.pi, ret.chain, ret.rho);
             }
-            flag = false;
-            l = 0;
-            while (!flag && l < s.size()) {
-                int x = s.get(l);
-                if (ret.chain[b][x] != 0) {
-                    flag = true;
-                }
-                l = l + 1;
-            }
-            //If there is no edge from b to s we create it to connect b to s
-            if (!flag) {
-                rhoBalanceEquation(b, s.get(gen.nextInt(s.size())), ret.pi, ret.chain, ret.rho);
+            int x = s.get(gen.nextInt(s.size()));
+            if (ret.chain[b][x] == 0) {
+                //If there is no edge from b to s we create it to connect b to s
+                rhoBalanceEquation(b, x, ret.pi, ret.chain, ret.rho);
             }
             //The vertex b can be added to s
             s.add(b);
@@ -171,6 +162,8 @@ public class Involuzioni {
     private static void fixRate(Triple ret) {
         ArrayList<Integer> vertices = new ArrayList<>();
         Random gen = new Random();
+        //we use this value to check if fixRate creates an edge to connect the additional vertex
+        boolean flag = false;
         for (int i = 0; i < ret.chain.length; i++) {
             vertices.add(i);
         }
@@ -182,10 +175,12 @@ public class Involuzioni {
                 double sum2 = outgoingRate(ret.chain, ret.rho[vertex]);
                 double edgeValue;
                 if (sum1 > sum2) {
+                    flag = true;
                     edgeValue = sum1 - sum2;
                     ret.chain[ret.rho[vertex]][ret.chain.length - 1] = edgeValue;
                     ret.chain[ret.chain.length - 1][vertex] = ret.pi[ret.rho[vertex]] * edgeValue / ret.pi[ret.chain.length - 1];
                 } else {
+                    flag = true;
                     if (sum2 > sum1) {
                         edgeValue = sum2 - sum1;
                         ret.chain[vertex][ret.chain.length - 1] = edgeValue;
@@ -194,13 +189,8 @@ public class Involuzioni {
                 }
             }
         }
-        int flag = 0;
-        for (int i = 0; (i < ret.chain.length && flag == 0); i++) {
-            if (ret.chain[ret.chain.length - 1][i] != 0) {
-                flag = 1;
-            }
-        }
-        if (flag == 0) {
+        //if there are no edges that connect the additional vertex we create one
+        if (!flag) {
             int x = gen.nextInt(ret.chain.length - 1);
             rhoBalanceEquation(ret.chain.length - 1, x, ret.pi, ret.chain, ret.rho);
             ret.chain[ret.chain.length - 1][ret.rho[x]] = ret.chain[ret.chain.length - 1][x];
@@ -216,7 +206,7 @@ public class Involuzioni {
         }
         return ret;
     }
-    
+
     public static double[][] converter(double chain[][]) {
         int n = chain.length;
         double max = 0.0;
@@ -243,5 +233,5 @@ public class Involuzioni {
         }
         return chain;
     }
-    
+
 }
