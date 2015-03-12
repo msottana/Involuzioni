@@ -30,7 +30,7 @@ public class Involuzioni {
         ret.rho = new int[n + 1];
         //s is the set that contains all the vertices of the generated connected component
         ArrayList<Integer> s = new ArrayList();
-        //u is the set that contains the remaining nodes of the graph whic aren't in s
+        //u is the set that contains the remaining nodes of the graph which are not in s
         ArrayList<Integer> u = new ArrayList();
         ArrayList<Integer> support = new ArrayList();
         Random gen = new Random();
@@ -74,7 +74,7 @@ public class Involuzioni {
         while (!u.isEmpty()) {
             a = s.get(gen.nextInt(s.size()));
             b = u.remove(gen.nextInt(u.size()));
-            //If the edge between a and b doesn't exist we create it
+            //If the edge between a and b does not exist we create it
             if (ret.chain[a][b] == 0) {
                 rhoBalanceEquation(a, b, ret.pi, ret.chain, ret.rho);
             }
@@ -97,6 +97,8 @@ public class Involuzioni {
         long startTime;
         long stopTime;
         long elapsedTime;
+        String s = "";
+        boolean print;
         Scanner keyboard = new Scanner(System.in);
         NumberFormat formatter = new DecimalFormat("#0.0000000000000000");
         //This file will be the imput file for VerifiRhoReversibility
@@ -105,6 +107,14 @@ public class Involuzioni {
         n = keyboard.nextInt();
         System.out.print("Insert the number of chains to generate: ");
         l = keyboard.nextInt();
+        System.out.print("Do you want terminal output? y/n");
+        s = keyboard.next();
+        while (!s.equals("y") && !s.equals("n")) {
+            System.out.println("Error, unrecognized command.");
+            System.out.print("Do you want terminal output? y/n ");
+            s = keyboard.next();
+        }
+        print = s.equals("y");
         System.out.println("Generation of " + l + " chains each composed by " + (n + 1) + " vertices.");
         startTime = System.currentTimeMillis();
         //Write the number of chains and vertices in the output file
@@ -119,30 +129,32 @@ public class Involuzioni {
             System.out.println("Elapsed time: " + elapsedTime + "ms");
             double[][] edges = converter(chain.chain);
             double[] vertices = chain.pi;
-            for (int i = 0; i < n + 1; i++) {
-                System.out.print(vertices[i] + " ");
-            }
-            System.out.println("");
-            out.write(chain.rho[0] + "");
-            System.out.print(0 + "->" + chain.rho[0] + "/");
-            for (int i = 1; i < n + 1; i++) {
-                out.write("," + chain.rho[i]);
-                System.out.print(i + "->" + chain.rho[i] + "/");
-            }
-            out.newLine();
-            System.out.println("");
-            System.out.println("");
-            for (int i = 0; i < n + 1; i++) {
-                System.out.print(formatter.format(edges[i][0]) + " | ");
-                out.write(edges[i][0] + "");
-                for (int j = 1; j < n + 1; j++) {
-                    System.out.print(formatter.format(edges[i][j]) + " | ");
-                    out.write("," + edges[i][j]);
+            if (print) {
+                for (int i = 0; i < n + 1; i++) {
+                    System.out.print(vertices[i] + " ");
                 }
                 System.out.println("");
+                out.write(chain.rho[0] + "");
+                System.out.print(0 + "->" + chain.rho[0] + "/");
+                for (int i = 1; i < n + 1; i++) {
+                    out.write("," + chain.rho[i]);
+                    System.out.print(i + "->" + chain.rho[i] + "/");
+                }
                 out.newLine();
+                System.out.println("");
+                System.out.println("");
+                for (int i = 0; i < n + 1; i++) {
+                    System.out.print(formatter.format(edges[i][0]) + " | ");
+                    out.write(edges[i][0] + "");
+                    for (int j = 1; j < n + 1; j++) {
+                        System.out.print(formatter.format(edges[i][j]) + " | ");
+                        out.write("," + edges[i][j]);
+                    }
+                    System.out.println("");
+                    out.newLine();
+                }
+                System.out.println("---------------------------------------------");
             }
-            System.out.println("---------------------------------------------");
         }
         out.close();
         stopTime = System.currentTimeMillis();
